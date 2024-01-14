@@ -2,10 +2,13 @@
 import express from 'express'
 import bodyParser from "body-parser";
 import * as mongoose from 'mongoose'
+import {ObjectId} from "mongodb";
 
 //import models
 import UserModel from "./models/user.model";
 import {CustomResponse} from "./dtos/custom.response";
+import ArticleModel from "./models/article.model";
+import {Schema} from "mongoose";
 
 //invoke the express
 const app= express();
@@ -103,16 +106,14 @@ app.post("/user/auth",async (req, res) => {
             } else {
                 res.status(401).send(
                     new CustomResponse(
-                        401,
-                        "Invalid password"
+                        401, "Invalid password"
                     )
                 )
             }
         }else {
             res.status(404).send(
                 new CustomResponse(
-                    404,
-                    "User not found!"
+                    404, "User not found!"
                 )
             )
         }
@@ -120,18 +121,61 @@ app.post("/user/auth",async (req, res) => {
     }catch (error){
         res.status(100).send(
             new CustomResponse(
-                100,
-                "Error"
+                100, "Error"
             )
         )
     }
 })
 
+// <---------------------------- Article --------------------------------->
 
+app.post("/article",async (req, res) =>{
+
+    try {
+        let request_body = req.body;
+
+        const articleModel = new ArticleModel({
+            title: request_body.title,
+            description: request_body.description,
+            user: new ObjectId(request_body.user)
+        })
+
+        await articleModel.save().then( msg =>{
+            //if success
+            res.status(200).send(
+                new CustomResponse(
+                    200,"Article successfully saved!")
+            )
+        }).catch(error => {
+            //an occur error
+            res.status(100).send(
+                new CustomResponse(100, `Something went wrong : ${error}`)
+            )
+        })
+
+
+    }catch (error) {
+        res.status(100).send(
+            new CustomResponse(100, "Error")
+        )
+    }
+})
+
+app.get("/articles/all",async (req, res) => {
+    try {
+        let articles =await ArticleModel.find()
+        res.status(200).send(
+            new CustomResponse(200,"Articles found",articles)
+        )
+    }catch (error) {
+        res.status(100).send(
+            new CustomResponse(100,`Error : ${error}`)
+        )
+    }
+
+})
 
 //start the server
 app.listen(8080,() =>{
     console.log("server started on port 8080")
 })
-
-// <---------------------------- Article --------------------------------->
