@@ -80,6 +80,39 @@ app.post('/user',async (req, res)=>{
 
 })
 
+app.post("/user/auth",async (req, res) => {
+
+    let request_body = req.body;
+
+    let user = await UserModel.findOne({email: request_body.email});
+
+    if(user){
+        if (user.password == request_body.password) {
+            res.status(200).send(
+                new CustomResponse(
+                    200,
+                    "Access",
+                    user
+                )
+            )
+        } else {
+            res.status(401).send(
+                new CustomResponse(
+                    401,
+                    "Invalid password"
+                )
+            )
+        }
+    }else {
+        res.status(404).send(
+            new CustomResponse(
+                404,
+                "User not found!"
+            )
+        )
+    }
+})
+
 
 
 //start the server
