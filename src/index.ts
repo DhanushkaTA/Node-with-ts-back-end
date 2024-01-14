@@ -163,9 +163,23 @@ app.post("/article",async (req, res) =>{
 
 app.get("/articles/all",async (req, res) => {
     try {
-        let articles =await ArticleModel.find()
+        let query_string :any = req.query;
+
+        let size :number = query_string.size;
+        let page :number = query_string.page;
+
+        let totalDocuments :number = await ArticleModel.countDocuments();
+        let totalPages :number = Math.ceil(totalDocuments / size);
+
+        let articles =await ArticleModel.find().limit(size).skip(size * (page - 1));
+
         res.status(200).send(
-            new CustomResponse(200,"Articles found",articles)
+            new CustomResponse(
+                200,
+                "Articles found",
+                articles,
+                totalPages
+            )
         )
     }catch (error) {
         res.status(100).send(
