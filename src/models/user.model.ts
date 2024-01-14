@@ -8,7 +8,7 @@ interface userInterface extends mongoose.Document{
     password:string
 }
 
-const userSchema = new mongoose.Schema({
+const userSchema = new mongoose.Schema<userInterface>({
     username:{type:String, required:true},
     fName:{type:String, required:true},
     lName:{type:String, required:true},
@@ -16,5 +16,5 @@ const userSchema = new mongoose.Schema({
     password:{type:String, required:true}
 })
 
-const UserModel= mongoose.model<userInterface>("user",userSchema);
+const UserModel= mongoose.model("user",userSchema);
 export default UserModel;

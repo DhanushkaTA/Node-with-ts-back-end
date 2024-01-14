@@ -34,6 +34,9 @@ mongoose.connect("mongodb://localhost/blog").then(r => {
 
 
 //node-->routs (end-point)
+
+
+// <---------------------------- Uer --------------------------------->
 app.get('/user/all',async (req :express.Request ,res :express.Response) =>{
 
     try {
@@ -82,32 +85,43 @@ app.post('/user',async (req, res)=>{
 
 app.post("/user/auth",async (req, res) => {
 
-    let request_body = req.body;
+    try {
 
-    let user = await UserModel.findOne({email: request_body.email});
+        let request_body = req.body;
 
-    if(user){
-        if (user.password == request_body.password) {
-            res.status(200).send(
-                new CustomResponse(
-                    200,
-                    "Access",
-                    user
+        let user = await UserModel.findOne({email: request_body.email});
+
+        if(user){
+            if (user.password == request_body.password) {
+                res.status(200).send(
+                    new CustomResponse(
+                        200,
+                        "Access",
+                        user
+                    )
                 )
-            )
-        } else {
-            res.status(401).send(
+            } else {
+                res.status(401).send(
+                    new CustomResponse(
+                        401,
+                        "Invalid password"
+                    )
+                )
+            }
+        }else {
+            res.status(404).send(
                 new CustomResponse(
-                    401,
-                    "Invalid password"
+                    404,
+                    "User not found!"
                 )
             )
         }
-    }else {
-        res.status(404).send(
+
+    }catch (error){
+        res.status(100).send(
             new CustomResponse(
-                404,
-                "User not found!"
+                100,
+                "Error"
             )
         )
     }
@@ -119,3 +133,5 @@ app.post("/user/auth",async (req, res) => {
 app.listen(8080,() =>{
     console.log("server started on port 8080")
 })
+
+// <---------------------------- Article --------------------------------->
