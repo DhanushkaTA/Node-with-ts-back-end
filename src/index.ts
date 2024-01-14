@@ -3,18 +3,9 @@ import express from 'express'
 import bodyParser from "body-parser";
 import * as mongoose from 'mongoose'
 
+//import models
 import UserModel from "./models/user.model";
-
-// interface User{
-//     id: string,
-//     username: string,
-//     lName: string,
-//     fName: string,
-//     email: string
-// }
-//
-// let users:User[] = [];
-
+import {CustomResponse} from "./dtos/custom.response";
 
 //invoke the express
 const app= express();
@@ -26,8 +17,9 @@ mongoose.connect("mongodb://localhost/blog").then(r => {
 }).catch(error => {
     console.log(`DB Connection Error : ${error}`)
 })
-const db= mongoose.connection
 
+// const db= mongoose.connection
+//
 // db.on('error', (error) => {
 //     console.error(`DB Connection Error: ${error}`);
 // });
@@ -42,29 +34,50 @@ const db= mongoose.connection
 
 
 //node-->routs (end-point)
-app.get('/user/all',(req :express.Request ,res :express.Response) =>{
+app.get('/user/all',async (req :express.Request ,res :express.Response) =>{
 
-    // res.send(users);
+    try {
+        let userList = await UserModel.find();
+        res.status(200).send(
+            new CustomResponse(
+                200,
+                "Users are found successfully!",
+                userList
+            )
+        );
+    } catch (error){
+        res.status(100).send("Error");
+    }
 })
 
 app.post('/user',async (req, res)=>{
 
-    // users.push(req.body);
-    let user = req.body;
+    try {
 
-    const userModel = new UserModel({
-        username:user.username,
-        fName:user.fName,
-        lName:user.lName,
-        email:user.email,
-        password:user.password
-    })
+        let user = req.body;
 
-    console.log(userModel)
+        const userModel = new UserModel({
+            username:user.username,
+            fName:user.fName,
+            lName:user.lName,
+            email:user.email,
+            password:user.password
+        })
 
-    await userModel.save()
+        console.log(userModel)
 
-    res.status(200).send("User created successfully")
+        await userModel.save()
+        userModel.password="";
+        res.status(200).send(
+            new CustomResponse(
+                200,"User created successfully",userModel
+            )
+        );
+
+    }catch (error) {
+        res.status(100).send("Error")
+    }
+
 })
 
 
