@@ -2,7 +2,7 @@ import dotenv from 'dotenv'
 dotenv.config();
 
 // const express = require("express") //before ES5
-import express from 'express'
+import express, {NextFunction} from 'express'
 import bodyParser from "body-parser";
 import * as mongoose from 'mongoose'
 import {ObjectId} from "mongodb";
@@ -11,8 +11,8 @@ import {ObjectId} from "mongodb";
 import UserModel from "./models/user.model";
 import {CustomResponse} from "./dtos/custom.response";
 import ArticleModel from "./models/article.model";
-import {Schema} from "mongoose";
 import * as process from "process";
+import jwt, {Secret} from 'jsonwebtoken'
 
 //invoke the express
 const app= express();
@@ -100,13 +100,32 @@ app.post("/user/auth",async (req, res) => {
 
         if(user){
             if (user.password == request_body.password) {
-                res.status(200).send(
-                    new CustomResponse(
-                        200,
-                        "Access",
-                        user
-                    )
-                )
+
+                user.password="";
+
+                const expiresIn = '1w';// 1h , 2h
+
+                // jwt gen
+                jwt.sign({user}, process.env.SECRET as Secret,{expiresIn},(error :any,token :any) => {
+
+                    if (error) {
+                        res.status(100).send(
+                            new CustomResponse(100,"Something went wrong")
+                        );
+                    }else {
+
+                        let req_body={
+                            user: user,
+                            accessToken: token
+                        }
+
+                        res.status(200).send(
+                            new CustomResponse(200,"Access",req_body)
+                        );
+                    }
+
+                })
+
             } else {
                 res.status(401).send(
                     new CustomResponse(
@@ -133,15 +152,39 @@ app.post("/user/auth",async (req, res) => {
 
 // <---------------------------- Article --------------------------------->
 
-app.post("/article",async (req, res) =>{
+const verifyToken = (req: express.Request, res: any, next: express.NextFunction) => {
+//methana res eka any damme response onject ekata api athin data ekak dana nisa
+//eka nisa ilaga method eketh res eka any karanna ona
+
+    let authorizationToken= req.headers.authorization;
+    // console.log(authorizationToken);
+
+    if (!authorizationToken) {
+        return res.status(401).json("Invalid Token");
+    }
+
+    try {
+        // let verifiedData = jwt.verify(authorizationToken,process.env.SECRET as Secret);
+        // res.tokenData = verifiedData;
+        res.tokenData = jwt.verify(authorizationToken,process.env.SECRET as Secret);
+        next();
+    }catch (error) {
+        return res.status(401).json("Invalid Token");
+    }
+
+}
+
+app.post("/article", verifyToken, async (req, res :any) =>{
 
     try {
         let request_body = req.body;
+        // console.log(res.tokenData)
+        let user_id = res.tokenData.user._id;
 
         const articleModel = new ArticleModel({
             title: request_body.title,
             description: request_body.description,
-            user: new ObjectId(request_body.user)
+            user: new ObjectId(user_id)
         })
 
         await articleModel.save().then( msg =>{
@@ -233,6 +276,34 @@ app.get('/articles/:username',async (req, res) => {
     }
 })
 
+app.get('/article/my', verifyToken, async (req,res: any) =>{
+
+    try {
+        let my_id = res.tokenData.user._id;
+
+        let query_string :any=req.query;
+        let size :number = query_string.size;
+        let page :number = query_string.page;
+
+        let totalDocuments = await ArticleModel.countDocuments({user:my_id});
+        let totalPages:number = Math.ceil(totalDocuments / size);
+
+        let my_articles =
+            await ArticleModel.find({user:my_id}).limit(size).skip(size * (page - 1));
+
+        res.status(200).json(
+            new CustomResponse(
+                200,
+                "Article found successfully!",
+                my_articles,
+                totalPages)
+        );
+    }catch (error){
+        res.status(100).send(
+            new CustomResponse(100,`Error : ${error}`)
+        )
+    }
+})
 //start the server
 app.listen(8080,() =>{
     console.log("server started on port 8080")
