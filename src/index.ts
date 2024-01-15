@@ -1,3 +1,6 @@
+import dotenv from 'dotenv'
+dotenv.config();
+
 // const express = require("express") //before ES5
 import express from 'express'
 import bodyParser from "body-parser";
@@ -9,13 +12,14 @@ import UserModel from "./models/user.model";
 import {CustomResponse} from "./dtos/custom.response";
 import ArticleModel from "./models/article.model";
 import {Schema} from "mongoose";
+import * as process from "process";
 
 //invoke the express
 const app= express();
 
 app.use(bodyParser.json());
 
-mongoose.connect("mongodb://localhost/blog").then(r => {
+mongoose.connect(process.env.MONGO_URL as string).then(r => {
     console.log(`DB Connection Successfully`)
 }).catch(error => {
     console.log(`DB Connection Error : ${error}`)
