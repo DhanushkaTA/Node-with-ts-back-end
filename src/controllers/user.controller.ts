@@ -6,24 +6,7 @@ import jwt, {Secret} from "jsonwebtoken";
 import process from "process";
 
 //Create user
-export const creatUser = async (req :express.Request ,res :express.Response) =>{
-
-    try {
-        let userList = await UserModel.find();
-        res.status(200).send(
-            new CustomResponse(
-                200,
-                "Users are found successfully!",
-                userList
-            )
-        );
-    } catch (error){
-        res.status(100).send("Error");
-    }
-}
-
-//Get All users
-export const getAllUsers = async (req :express.Request , res :express.Response)=>{
+export const creatUser = async (req :express.Request , res :express.Response)=>{
 
     try {
 
@@ -56,6 +39,23 @@ export const getAllUsers = async (req :express.Request , res :express.Response)=
         res.status(100).send("Error")
     }
 
+}
+
+//Get All users
+export const getAllUsers = async (req :express.Request ,res :express.Response) =>{
+
+    try {
+        let userList = await UserModel.find();
+        res.status(200).send(
+            new CustomResponse(
+                200,
+                "Users are found successfully!",
+                userList
+            )
+        );
+    } catch (error){
+        res.status(100).send("Error");
+    }
 }
 
 //Auth

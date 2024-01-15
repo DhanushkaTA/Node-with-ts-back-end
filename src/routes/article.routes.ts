@@ -37,6 +37,6 @@ router.put('/update', Middleware.verifyToken, ArticleController.updateArticle)
 /**
  * Delete article
  */
-router.delete("/delete/:id", Middleware.verifyToken, )
+router.delete("/delete/:id", Middleware.verifyToken, ArticleController.deleteArticle)
 
 export default router;
