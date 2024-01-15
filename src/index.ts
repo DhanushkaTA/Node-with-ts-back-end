@@ -8,9 +8,9 @@ import * as mongoose from 'mongoose'
 import {ObjectId} from "mongodb";
 
 //import models
-import UserModel from "./models/user.model";
+import UserModel, {userInterface} from "./models/user.model";
 import {CustomResponse} from "./dtos/custom.response";
-import ArticleModel from "./models/article.model";
+import ArticleModel, {articleInterface} from "./models/article.model";
 import * as process from "process";
 import jwt, {Secret} from 'jsonwebtoken'
 
@@ -64,25 +64,32 @@ app.post('/user',async (req, res)=>{
 
     try {
 
-        let user = req.body;
+        let res_body=req.body;
 
         const userModel = new UserModel({
-            username:user.username,
-            fName:user.fName,
-            lName:user.lName,
-            email:user.email,
-            password:user.password
+            username:res_body.username,
+            fName:res_body.fName,
+            lName:res_body.lName,
+            email:res_body.email,
+            password:res_body.password
         })
 
         console.log(userModel)
 
-        await userModel.save()
-        userModel.password="";
-        res.status(200).send(
-            new CustomResponse(
-                200,"User created successfully",userModel
-            )
-        );
+        let user :userInterface | null = await userModel.save();
+
+        if (user){
+            user.password="";
+
+            res.status(200).send(
+                new CustomResponse(
+                    200,"User created successfully",user
+                )
+            );
+        }else {
+            res.status(100).send("Something went wrong")
+        }
+
 
     }catch (error) {
         res.status(100).send("Error")
@@ -257,7 +264,8 @@ app.get('/articles/:username',async (req, res) => {
             let totalDocument :number=ArticleModel.countDocuments({user:user._id});
             let totalPages=Math.ceil(totalDocument / size)
 
-            let articles = await ArticleModel.find({user:user._id}).limit(size).skip(size * (page - 1));
+            let articles =
+                await ArticleModel.find({user:user._id}).limit(size).skip(size * (page - 1));
 
             res.status(200).send(
                 new CustomResponse(
@@ -304,6 +312,43 @@ app.get('/article/my', verifyToken, async (req,res: any) =>{
         )
     }
 })
+
+app.put('/article/update', verifyToken, async (req, res :any) => {
+    try {
+        let req_body = req.body;
+        let user_id = res.tokenData.user._id;
+
+        let article : articleInterface | null =
+            await ArticleModel.findOne({_id:req_body.id, user:user_id});
+
+        if (article){
+
+            await ArticleModel.findByIdAndUpdate(
+                {_id: req_body.id},
+                {title:req_body.title, description: req_body.description}
+            ).then(r => {
+                res.status(200).send(
+                    new CustomResponse(200,"Article update successfully!")
+                );
+            }).catch(error => {
+                res.status(400).send(
+                    new CustomResponse(400,`Can't find article!!! : ${error}`)
+                )
+            })
+
+        }else {
+            res.status(400).send(
+                new CustomResponse(400,"Can't find article!!!")
+            )
+        }
+
+    }catch (error){
+        res.status(100).send(
+            new CustomResponse(100,"Error")
+        )
+    }
+})
+
 //start the server
 app.listen(8080,() =>{
     console.log("server started on port 8080")

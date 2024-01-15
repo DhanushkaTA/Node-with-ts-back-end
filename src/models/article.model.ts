@@ -1,6 +1,6 @@
 import mongoose, {ObjectId, Schema} from "mongoose";
 
-interface articleInterface extends mongoose.Document{
+export interface articleInterface extends mongoose.Document{
     title: string,
     description: string,
     publishedDate: Date,
