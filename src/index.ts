@@ -189,6 +189,46 @@ app.get("/articles/all",async (req, res) => {
 
 })
 
+app.get('/articles/:username',async (req, res) => {
+
+    try {
+        // console.log(req.params)
+        let username=req.params.username;
+
+        let user = await UserModel.findOne({username: username});
+
+        if (!user){
+            res.status(404).send(
+                new CustomResponse(404,"User not found!")
+            )
+        }else {
+            let query_string :any=req.query;
+            let size :number = query_string.size;
+            let page :number = query_string.page;
+
+            //@ts-ignore
+            let totalDocument :number=ArticleModel.countDocuments({user:user._id});
+            let totalPages=Math.ceil(totalDocument / size)
+
+            let articles = await ArticleModel.find({user:user._id}).limit(size).skip(size * (page - 1));
+
+            res.status(200).send(
+                new CustomResponse(
+                    200,
+                    "Articles found successfully",
+                    articles,
+                    totalPages
+                )
+            )
+        }
+
+    } catch (error){
+        res.status(100).send(
+            new CustomResponse(100,`Error : ${error}`)
+        )
+    }
+})
+
 //start the server
 app.listen(8080,() =>{
     console.log("server started on port 8080")
