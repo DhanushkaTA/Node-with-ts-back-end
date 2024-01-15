@@ -4,37 +4,14 @@ import {CustomResponse} from "../dtos/custom.response";
 import UserModel from "../models/user.model";
 import * as SchemaTypes from "../types/SchemaTypes";
 import express from "express";
-import jwt, {Secret} from "jsonwebtoken";
-import process from "process";
+import * as Middleware from "../middlewares"
 
 let router = express.Router();
-
-const verifyToken = (req: express.Request, res: any, next: express.NextFunction) => {
-//methana res eka any damme response onject ekata api athin data ekak dana nisa
-//eka nisa ilaga method eketh res eka any karanna ona
-
-    let authorizationToken= req.headers.authorization;
-    // console.log(authorizationToken);
-
-    if (!authorizationToken) {
-        return res.status(401).json("Invalid Token");
-    }
-
-    try {
-        // let verifiedData = jwt.verify(authorizationToken,process.env.SECRET as Secret);
-        // res.tokenData = verifiedData;
-        res.tokenData = jwt.verify(authorizationToken,process.env.SECRET as Secret);
-        next();
-    }catch (error) {
-        return res.status(401).json("Invalid Token");
-    }
-
-}
 
 /**
  * Create article
  */
-router.post("/", verifyToken, async (req, res :any) =>{
+router.post("/", Middleware.verifyToken, async (req, res :any) =>{
 
     try {
         let request_body = req.body;
@@ -146,7 +123,7 @@ router.get('/all/:username',async (req, res) => {
 /**
  * Get my articles
  */
-router.get('/my', verifyToken, async (req,res: any) =>{
+router.get('/my', Middleware.verifyToken, async (req,res: any) =>{
 
     try {
         let my_id = res.tokenData.user._id;
@@ -178,7 +155,7 @@ router.get('/my', verifyToken, async (req,res: any) =>{
 /**
  * Update article
  */
-router.put('/update', verifyToken, async (req, res :any) => {
+router.put('/update', Middleware.verifyToken, async (req, res :any) => {
     try {
         let req_body = req.body;
         let user_id = res.tokenData.user._id;
@@ -217,7 +194,7 @@ router.put('/update', verifyToken, async (req, res :any) => {
 /**
  * Delete article
  */
-router.delete("/delete/:id", verifyToken, async (req,res :any) => {
+router.delete("/delete/:id", Middleware.verifyToken, async (req,res :any) => {
     try {
 
         let user_id = res.tokenData.user._id;
