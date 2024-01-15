@@ -1,14 +1,7 @@
 import mongoose from "mongoose";
+import {UserInterface} from "../types/SchemaTypes";
 
-export interface userInterface extends mongoose.Document{
-    username: string,
-    fName:string,
-    lName:string,
-    email:string,
-    password:string
-}
-
-const userSchema = new mongoose.Schema<userInterface>({
+const userSchema = new mongoose.Schema<UserInterface>({
     username:{type:String, required:true},
     fName:{type:String, required:true},
     lName:{type:String, required:true},

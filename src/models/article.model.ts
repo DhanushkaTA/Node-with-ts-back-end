@@ -1,13 +1,8 @@
 import mongoose, {ObjectId, Schema} from "mongoose";
+import {ArticleInterface} from "../types/SchemaTypes";
 
-export interface articleInterface extends mongoose.Document{
-    title: string,
-    description: string,
-    publishedDate: Date,
-    user: ObjectId
-}
 
-const ArticleSchema = new mongoose.Schema<articleInterface>({
+const ArticleSchema = new mongoose.Schema<ArticleInterface>({
     title: {type: String, required: true},
     description: {type: String, required: true},
     publishedDate: {type: Date, required: true, default: Date.now()},

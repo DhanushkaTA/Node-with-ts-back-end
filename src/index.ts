@@ -8,11 +8,12 @@ import * as mongoose from 'mongoose'
 import {ObjectId} from "mongodb";
 
 //import models
-import UserModel, {userInterface} from "./models/user.model";
 import {CustomResponse} from "./dtos/custom.response";
-import ArticleModel, {articleInterface} from "./models/article.model";
 import * as process from "process";
 import jwt, {Secret} from 'jsonwebtoken'
+import * as SchemaTypes from "../src/types/SchemaTypes"
+import UserModel from "./models/user.model";
+import ArticleModel from "./models/article.model";
 
 //invoke the express
 const app= express();
@@ -76,7 +77,7 @@ app.post('/user',async (req, res)=>{
 
         console.log(userModel)
 
-        let user :userInterface | null = await userModel.save();
+        let user :SchemaTypes.UserInterface | null = await userModel.save();
 
         if (user){
             user.password="";
@@ -318,7 +319,7 @@ app.put('/article/update', verifyToken, async (req, res :any) => {
         let req_body = req.body;
         let user_id = res.tokenData.user._id;
 
-        let article : articleInterface | null =
+        let article : SchemaTypes.ArticleInterface | null =
             await ArticleModel.findOne({_id:req_body.id, user:user_id});
 
         if (article){
@@ -337,8 +338,44 @@ app.put('/article/update', verifyToken, async (req, res :any) => {
             })
 
         }else {
-            res.status(400).send(
+            res.status(401).send(
                 new CustomResponse(400,"Can't find article!!!")
+            )
+        }
+
+    }catch (error){
+        res.status(100).send(
+            new CustomResponse(100,"Error")
+        )
+    }
+})
+
+app.delete("/article/delete/:id", verifyToken, async (req,res :any) => {
+    try {
+
+        let user_id = res.tokenData.user._id;
+        let article_id = req.params.id;
+
+        let article :SchemaTypes.ArticleInterface | null =
+            await ArticleModel.findOne({_id:article_id , user:user_id});
+
+        if (article) {
+
+            await ArticleModel.deleteOne({_id:article_id}).then(r => {
+
+                res.status(200).send(
+                    new CustomResponse(200,"Article deleted successfully")
+                );
+
+            }).catch(error => {
+                res.status(100).send(
+                    new CustomResponse(100,`Something went wrong : ${error}`)
+                )
+            })
+
+        }else {
+            res.status(401).send(
+                new CustomResponse(400,"Access Denied!!!")
             )
         }
 
