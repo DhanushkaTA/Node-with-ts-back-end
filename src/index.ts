@@ -5,15 +5,9 @@ dotenv.config();
 import express, {NextFunction} from 'express'
 import bodyParser from "body-parser";
 import * as mongoose from 'mongoose'
-import {ObjectId} from "mongodb";
 
 //import models
-import {CustomResponse} from "./dtos/custom.response";
 import * as process from "process";
-import jwt, {Secret} from 'jsonwebtoken'
-import * as SchemaTypes from "../src/types/SchemaTypes"
-import UserModel from "./models/user.model";
-import ArticleModel from "./models/article.model";
 
 import UserRoutes from "./routes/user.routes";
 import ArticleRoutes from "./routes/article.routes";

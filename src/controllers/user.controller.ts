@@ -69,7 +69,6 @@ export const authUser = async (req :express.Request, res :express.Response) => {
     try {
 
         let request_body = req.body;
-
         let user = await UserModel.findOne({email: request_body.email});
 
         if(user){
