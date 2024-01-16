@@ -8,12 +8,17 @@ import * as mongoose from 'mongoose'
 
 //import models
 import * as process from "process";
+import cors from "cors"
 
 import UserRoutes from "./routes/user.routes";
 import ArticleRoutes from "./routes/article.routes";
 
 //invoke the express
 const app= express();
+
+app.use(cors({
+    origin: "*"
+}))
 
 app.use(bodyParser.json());
 
