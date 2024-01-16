@@ -20,7 +20,7 @@ export const creatUser = async (req :express.Request , res :express.Response)=>{
                 fName: req_body.fName,
                 lName: req_body.lName,
                 email: req_body.email,
-                password: req_body.password
+                password: hash
             })
 
             console.log(userModel)
